@@ -2,6 +2,7 @@ import i18next from "./i18n";
 // import {pgnReader} from '@mliebelt/pgn-reader'
 import { pgnReader } from "../../pgn-reader/src/pgn";
 import { Chessground } from "chessground";
+import { DrawShape } from "chessground/draw";
 import "chessground/assets/chessground.base.css";
 import "chessground/assets/chessground.brown.css";
 import Timer from "./Timer";
@@ -16,7 +17,7 @@ import resizeHandle from "./resize";
  * of pgnBase to build new functionality. The configuration here is the super-set
  * of all the configurations of the other functions.
  */
-let pgnBase = function (boardId, configuration) {
+let pgnBase = function (boardId, configuration, lastStats = undefined) {
   // Section defines the variables needed everywhere.
   let that = {};
   that.userConfiguration = configuration;
@@ -784,17 +785,48 @@ let pgnBase = function (boardId, configuration) {
       }
     }
 
+    const shapeSet1 = [
+      { orig: "a3", brush: "green" },
+      { orig: "a4", brush: "blue" },
+      { orig: "a5", brush: "yellow" },
+      { orig: "a6", brush: "red" },
+      { orig: "e2", dest: "e4", brush: "green" },
+      { orig: "a6", dest: "c8", brush: "blue" },
+      { orig: "f8", dest: "f4", brush: "yellow" },
+      {
+        orig: "h5",
+        brush: "green",
+        piece: {
+          color: "white",
+          role: "knight",
+        },
+      },
+      {
+        orig: "h6",
+        brush: "red",
+        piece: {
+          color: "black",
+          role: "queen",
+          scale: 0.6,
+        },
+      },
+    ];
     // Default values of the board, if not overwritten by the given configuration
     that.boardConfig = {
       coordsInner: true,
       coordsFactor: 1.0,
       disableContextMenu: true,
       drawable: {
-        onChange: (shapes) => {
-          let move = that.mypgn.getMove(that.currentMove);
-          that.mypgn.setShapes(move, shapes);
-        },
+        visible: false,
+        shapes: shapeSet1,
       },
+      // drawable: false,
+      // drawable: {
+      //   onChange: (shapes) => {
+      //     let move = that.mypgn.getMove(that.currentMove);
+      //     that.mypgn.setShapes(move, shapes);
+      //   },
+      // },
     };
     let boardConfig = that.boardConfig;
     copyBoardConfiguration(that.configuration, boardConfig, [
@@ -836,7 +868,13 @@ let pgnBase = function (boardId, configuration) {
     }
     // Ensure that boardWidth is a multiply of 8
     // boardConfig.width = "" + smallerWidth +"px"
-    that.board = Chessground(el, boardConfig);
+    that.board = Chessground(el, {
+      ...boardConfig,
+      drawable: {
+        visible: false,
+        shapes: shapeSet1,
+      },
+    });
     // resizeHandle(that, el, el.firstChild, smallerWidth, resizeLayout)
     //console.log("Board width: " + board.width)
     recomputeCoordsFonts(boardConfig, el);
@@ -1309,6 +1347,13 @@ let pgnBase = function (boardId, configuration) {
     if (next) {
       scrollToView(moveSpan(next));
     }
+    console.log("pgn-viewer makeMove: ", {
+      pgn: that.mypgn.writePgn(),
+      lastMove: that.mypgn.findMove(myFen),
+    });
+    lastStats.movesList = that.mypgn.getMoves();
+    lastStats.lastMove = that.mypgn.findMove(myFen);
+    lastStats.pgn = that.mypgn.writePgn();
     if (hasMode("edit")) {
       let col = chess.turn() == "w" ? "white" : "black";
       that.board.set({
