@@ -532,10 +532,12 @@ const pgnReader = function (configuration) {
     }
     let moves = getMoves();
     for (let move of moves) {
-      if (move.fen.startsWith(moveRep)) {
-        return move;
-      } else if (move.notation.notation === moveRep) {
-        return move;
+      if (move !== null) {
+        if (move.fen.startsWith(moveRep)) {
+          return move;
+        } else if (move.notation.notation === moveRep) {
+          return move;
+        }
       }
     }
     return undefined;

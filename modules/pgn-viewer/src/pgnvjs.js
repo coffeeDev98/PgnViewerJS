@@ -817,16 +817,13 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
       coordsFactor: 1.0,
       disableContextMenu: true,
       drawable: {
-        visible: false,
-        shapes: shapeSet1,
+        // visible: false,
+        // shapes: shapeSet1,
+        onChange: (shapes) => {
+          let move = that.mypgn.getMove(that.currentMove);
+          that.mypgn.setShapes(move, shapes);
+        },
       },
-      // drawable: false,
-      // drawable: {
-      //   onChange: (shapes) => {
-      //     let move = that.mypgn.getMove(that.currentMove);
-      //     that.mypgn.setShapes(move, shapes);
-      //   },
-      // },
     };
     let boardConfig = that.boardConfig;
     copyBoardConfiguration(that.configuration, boardConfig, [
@@ -843,6 +840,7 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
       "highlight",
       "boardSize",
       "coordsFontSize",
+      "drawable",
     ]);
     boardConfig.resizable = true;
     if (typeof boardConfig.showCoords != "undefined") {
@@ -856,6 +854,9 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
     if (boardConfig.boardSize) {
       boardConfig.width = boardConfig.boardSize;
     }
+    if (!boardConfig.drawable) {
+      boardConfig.drawable = { visible: false };
+    }
     let currentWidth = parseInt(boardConfig.width);
     let moduloWidth = currentWidth % 8;
     let smallerWidth = currentWidth - moduloWidth;
@@ -868,13 +869,16 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
     }
     // Ensure that boardWidth is a multiply of 8
     // boardConfig.width = "" + smallerWidth +"px"
-    that.board = Chessground(el, {
-      ...boardConfig,
-      drawable: {
-        visible: false,
-        shapes: shapeSet1,
-      },
-    });
+
+    that.board = Chessground(el, boardConfig);
+
+    // that.board = Chessground(el, {
+    //   ...boardConfig,
+    //   drawable: {
+    //     visible: false,
+    //     shapes: shapeSet1,
+    //   },
+    // });
     // resizeHandle(that, el, el.firstChild, smallerWidth, resizeLayout)
     //console.log("Board width: " + board.width)
     recomputeCoordsFonts(boardConfig, el);
@@ -1211,7 +1215,7 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
         addClass(divBoard.querySelector("div.buttons > ." + name), "gray");
       });
     }
-    if ((next !== null && typeof move.next != "number") || pgnEmpty()) {
+    if ((next !== null && move && typeof move.next != "number") || pgnEmpty()) {
       ["next", "play", "last"].forEach(function (name) {
         addClass(divBoard.querySelector("div.buttons > ." + name), "gray");
       });
@@ -1347,10 +1351,6 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
     if (next) {
       scrollToView(moveSpan(next));
     }
-    console.log("pgn-viewer makeMove: ", {
-      pgn: that.mypgn.writePgn(),
-      lastMove: that.mypgn.findMove(myFen),
-    });
     lastStats.movesList = that.mypgn.getMoves();
     lastStats.lastMove = that.mypgn.findMove(myFen);
     lastStats.pgn = that.mypgn.writePgn();
@@ -1654,7 +1654,10 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
         });
         addEventListener(id("buttonsId") + "deleteMoves", "click", function () {
           const prev = that.mypgn.getMove(that.currentMove).prev;
-          const fen = that.mypgn.getMove(prev).fen;
+          const fen =
+            that.mypgn.getMove(prev)?.fen ||
+            that.configuration.position ||
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
           that.mypgn.deleteMove(that.currentMove);
           //document.getElementById(id('movesId')).innerHtml = ""
           let myNode = document.getElementById(id("movesId"));
