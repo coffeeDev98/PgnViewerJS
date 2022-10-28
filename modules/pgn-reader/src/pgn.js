@@ -526,7 +526,7 @@ const pgnReader = function (configuration) {
       let move = getMove(0);
       while (moveRep > 0) {
         moveRep = moveRep - 1;
-        move = getMove(move.next);
+        move = getMove(move?.next);
       }
       return move;
     }
@@ -761,7 +761,7 @@ const pgnReader = function (configuration) {
 
     function write_notation(move, sb) {
       prepend_space(sb);
-      sb.append(move.notation.notation);
+      sb.append(move.notation?.notation);
     }
 
     function write_NAGs(move, sb) {
@@ -781,7 +781,7 @@ const pgnReader = function (configuration) {
     }
 
     function write_variations(move, sb) {
-      for (let i = 0; i < move.variations.length; i++) {
+      for (let i = 0; i < move.variations?.length; i++) {
         write_variation(move.variations[i], sb);
       }
     }
