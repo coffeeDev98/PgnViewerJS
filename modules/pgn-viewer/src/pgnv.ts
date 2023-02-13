@@ -22,7 +22,7 @@ import { pgnEdit } from '.'
  * of pgnBase to build new functionality. The configuration here is the super-set
  * of all the configurations of the other functions.
  */
-let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration) {
+let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration, lastStats?:any) {
     // Section defines the variables needed everywhere.
     let that:Base = { mypgn: null, board: null, mousetrap: null }
     that.userConfiguration = configuration
@@ -1090,8 +1090,14 @@ let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration) {
         unmarkMark(next)
         that.currentMove = next
         if (next) {
-            scrollToView(moveSpan(next))
+          scrollToView(moveSpan(next));
         }
+
+        lastStats.movesList = that.mypgn.getMoves();
+        lastStats.lastMove = that.mypgn.findMove(myFen);
+        lastStats.pgn = that.mypgn.writePgn();
+
+        
         if (hasMode('edit')) {
             chess.load(myFen)
             let col: Color = chess.turn() == 'w' ? 'white' : 'black'
