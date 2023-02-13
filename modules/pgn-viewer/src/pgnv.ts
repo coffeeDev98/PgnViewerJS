@@ -22,7 +22,7 @@ import { pgnEdit } from '.'
  * of pgnBase to build new functionality. The configuration here is the super-set
  * of all the configurations of the other functions.
  */
-let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration, lastStats?:any) {
+let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration, lastStats:any={}) {
     // Section defines the variables needed everywhere.
     let that:Base = { mypgn: null, board: null, mousetrap: null }
     that.userConfiguration = configuration
@@ -230,6 +230,7 @@ let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration, la
      * @param meta additional parameters (not used at the moment)
      */
     function onSnapEnd(from:Field, to:Field, meta:any) {
+        console.log("onSnapEnd CALLED")
         function positionPromDiv(to:Field, modID:string) {
             let boardRect = document.getElementById(id('innerBoardId')).getBoundingClientRect()
             let _tor = 9 - (parseInt(to.substring(1)))
@@ -292,6 +293,12 @@ let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration, la
             if (fenView) {
                 fenView.value = move.fen
             }
+
+            lastStats.movesList = that.mypgn.getMoves()
+            lastStats.lastMove = that.mypgn.getMove(that.currentMove);
+            lastStats.fen = lastStats.lastMove.fen
+            lastStats.pgn = that.mypgn.writePgn();
+
             toggleColorMarker(move.turn)
             resizeLayout()
         }
@@ -1063,7 +1070,7 @@ let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration, la
             }
         }
 
-        //console.log("Marke move: Curr " + curr + " Next " + next + " FEN " + fen)
+        // console.log("Marke move: Curr " + curr + " Next " + next + " FEN " + fen)
         //board.set({fen: fen})
         let myMove = that.mypgn.getMove(next)
         let myFen = myMove ? myMove.fen : fen
@@ -1095,6 +1102,7 @@ let pgnBase = function (boardId:string, configuration:PgnViewerConfiguration, la
 
         lastStats.movesList = that.mypgn.getMoves();
         lastStats.lastMove = that.mypgn.findMove(myFen);
+        lastStats.fen = myFen;
         lastStats.pgn = that.mypgn.writePgn();
 
         
