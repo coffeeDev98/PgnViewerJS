@@ -17,7 +17,7 @@ import resizeHandle from "./resize";
  * of pgnBase to build new functionality. The configuration here is the super-set
  * of all the configurations of the other functions.
  */
-let pgnBase = function (boardId, configuration, lastStats = undefined) {
+let pgnBase = function (boardId, configuration, lastStats = {}) {
   // Section defines the variables needed everywhere.
   let that = {};
   that.userConfiguration = configuration;
@@ -314,6 +314,12 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
       if (fenView) {
         fenView.value = move.fen;
       }
+
+      lastStats.movesList = that.mypgn.getMoves();
+      lastStats.lastMove = that.mypgn.getMove(that.currentMove);
+      lastStats.fen = lastStats.lastMove.fen;
+      lastStats.pgn = that.mypgn.writePgn();
+
       toggleColorMarker(move.turn);
       resizeLayout();
     }
@@ -1387,6 +1393,7 @@ let pgnBase = function (boardId, configuration, lastStats = undefined) {
     }
     lastStats.movesList = that.mypgn.getMoves();
     lastStats.lastMove = that.mypgn.findMove(myFen);
+    lastStats.fen = myFen;
     lastStats.pgn = that.mypgn.writePgn();
     if (hasMode("edit")) {
       let col = chess.turn() == "w" ? "white" : "black";
